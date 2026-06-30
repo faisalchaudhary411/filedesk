@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FileDesk &mdash; Free PDF Tools</title>
 <meta name="description" content="Merge, split, compress and convert PDFs for free. Nothing is uploaded to a server.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2314171A'/%3E%3Crect x='24' y='24' width='52' height='52' rx='8' fill='%232453FF'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2314171A'/%3E%3Crect x='24' y='24' width='52' height='52' rx='8' fill='%232453FF'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -276,6 +278,12 @@ footer .wrap{display:flex; justify-content:space-between; align-items:center; fl
 footer p{color:var(--ink-soft); font-size:0.82rem; margin:0;}
 footer p a{color:var(--cobalt); text-decoration:none; font-weight:500;}
 footer p a:hover{text-decoration:underline;}
+footer .footer-bottom{
+  max-width:1080px; margin:18px auto 0; padding:16px 24px 0;
+  border-top:1px solid var(--line);
+  text-align:center;
+}
+footer .footer-bottom p{font-size:0.78rem; color:var(--ink-soft);}
 
 .sr-only{
   position:absolute; width:1px;height:1px; padding:0;margin:-1px;
@@ -292,12 +300,59 @@ footer p a:hover{text-decoration:underline;}
 .ad-slot{padding:36px 0; border-top:1px solid var(--line); text-align:center;}
 .ad-slot .ad-label{font-family:var(--mono); font-size:0.68rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;}
 .ad-slot .ad-frame{display:inline-block; min-height:250px;}
-.filedesk-sticky-footer{position:fixed; bottom:0; left:0; right:0; z-index:9999; background:rgba(242,243,240,0.97); border-top:1px solid var(--line); padding:6px; text-align:center; display:none;}
-@media (max-width:768px){.filedesk-sticky-footer{display:block;}}
-body.has-sticky-ad{padding-bottom:70px;}
+/* ---------- ad overlay (timer + skip) ---------- */
+.ad-overlay{
+  position:fixed; inset:0; background:rgba(20,23,26,0.78);
+  backdrop-filter:blur(6px); z-index:100000;
+  display:none; align-items:center; justify-content:center; padding:20px;
+}
+.ad-overlay.active{display:flex;}
+.ad-box{
+  background:var(--card); border-radius:18px; padding:32px 28px;
+  max-width:380px; width:100%; text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,0.25);
+}
+.ad-eyebrow{
+  font-family:var(--mono); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em;
+  color:var(--cobalt); background:var(--cobalt-dim); display:inline-block;
+  padding:4px 10px; border-radius:20px; margin-bottom:14px;
+}
+.ad-box h3{font-family:var(--display); font-size:1.15rem; margin:0 0 8px;}
+.ad-sub{color:var(--ink-soft); font-size:0.85rem; margin:0 0 20px; line-height:1.45;}
+.ad-timer-display{
+  font-family:var(--display); font-weight:700; font-size:2.6rem; color:var(--ink); line-height:1;
+}
+.ad-timer-label{font-family:var(--mono); font-size:0.68rem; color:var(--ink-soft); letter-spacing:0.06em; margin:4px 0 16px;}
+.ad-progress-wrap{height:5px; background:var(--line); border-radius:5px; overflow:hidden; margin-bottom:22px;}
+.ad-progress-fill{height:100%; width:0%; background:var(--cobalt); transition:width .1s linear;}
+.ad-skip-btn{
+  display:none; font-family:var(--body); font-weight:600; font-size:0.9rem;
+  background:var(--ink); color:#fff; border:none; padding:12px 22px; border-radius:9px; cursor:pointer;
+}
+.ad-skip-btn.visible{display:inline-flex; animation:fadeUp .25s ease both;}
+.ad-skip-btn:hover{background:#000;}
+.ad-status{margin-top:12px; font-size:0.78rem; color:var(--ink-soft);}
+.ad-status.go{color:#2E8B57; font-weight:600;}
+@keyframes fadeUp{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
 </style>
 </head>
 <body>
+
+<div class="ad-overlay" id="adOverlay">
+  <div class="ad-box">
+    <div class="ad-eyebrow">One quick ad</div>
+    <h3>Your file is ready in a moment</h3>
+    <p class="ad-sub" id="adSubText">An ad opened in a new tab — you can close it any time. Your download starts automatically when the timer ends.</p>
+    <div class="ad-timer-display" id="adTimerDisplay">6</div>
+    <div class="ad-timer-label">SECONDS LEFT</div>
+    <div class="ad-progress-wrap">
+      <div class="ad-progress-fill" id="adProgressFill"></div>
+    </div>
+    <button class="ad-skip-btn" id="adSkipBtn">Skip &amp; continue now →</button>
+    <div class="ad-status" id="adStatus">This only happens once per visit</div>
+  </div>
+</div>
+
 
 <header class="site">
   <div class="header-row">
@@ -414,7 +469,12 @@ body.has-sticky-ad{padding-bottom:70px;}
     <p>No files are uploaded. No account required.</p>
     <p>Also from the same maker: <a href="https://voxcraft.site" target="_blank" rel="noopener">VoxCraft</a> (AI audio studio) &middot; <a href="https://qalamstudio.xyz" target="_blank" rel="noopener">QalamStudio</a> (Urdu writing AI)</p>
   </div>
+  <div class="footer-bottom">
+    <p>&copy; <span id="copyYear">2026</span> FileDesk. All rights reserved. &middot; Made with ❤️ in Pakistan</p>
+  </div>
 </footer>
+
+<script>document.getElementById("copyYear").textContent = new Date().getFullYear();</script>
 
 <script>
 (function(){
@@ -708,7 +768,7 @@ body.has-sticky-ad{padding-bottom:70px;}
     showState("idle");
   });
 
-  runBtn.addEventListener("click", function(){
+  function runConversion(){
     if (!state.files.length) return;
     showState("working");
     setProgress(5, "Reading file…");
@@ -735,6 +795,15 @@ body.has-sticky-ad{padding-bottom:70px;}
         dzError.textContent = "Something went wrong: " + (err && err.message ? err.message : "could not process this file. Try a different file or tool.");
         showState("error");
       });
+  }
+
+  runBtn.addEventListener("click", function(){
+    if (!state.files.length) return;
+    if (window.FileDeskAds && typeof window.FileDeskAds.gate === "function"){
+      window.FileDeskAds.gate(runConversion);
+    } else {
+      runConversion();
+    }
   });
 
   function setProgress(pct, label){
@@ -1270,40 +1339,91 @@ body.has-sticky-ad{padding-bottom:70px;}
 
 })();
 </script>
-<!-- Sticky Footer Ad (mobile only) -->
-<div class="filedesk-sticky-footer">
-  <script async="async" data-cfasync="false" src="https://pl30142952.effectivecpmnetwork.com/4aeffe08137b902653ea9208ed00633a/invoke.js"></script>
-  <div id="container-4aeffe08137b902653ea9208ed00633a"></div>
-</div>
-<script>document.body.classList.add('has-sticky-ad');</script>
-
-<!-- Adsterra auxiliary units -->
-<script src="https://pl30142949.effectivecpmnetwork.com/9a/c0/8a/9ac08ad8078d51032a123b5b773805f1.js"></script>
-<script src="https://pl30142951.effectivecpmnetwork.com/01/9d/bf/019dbf5ed23e8e55be2575e171fd512c.js"></script>
 
 <script>
-  // ── Session-based popunder: only once per session, on the main Convert click ──
-  (function(){
-    var AD_SESSION_KEY = 'filedesk_ad_shown';
-    var POPUNDER_URL = 'https://www.effectivecpmnetwork.com/pc3fwdj3ty?key=930761d9ca2f577e125633acee333d72';
+  // ── Ad gate: shows a timed overlay (with skip) once per session, then runs the
+  //    requested action. Subsequent conversions in the same session skip straight through. ──
+  window.FileDeskAds = (function(){
+    var AD_SESSION_KEY   = 'filedesk_ad_shown';
+    var POPUNDER_URL     = 'https://www.effectivecpmnetwork.com/pc3fwdj3ty?key=930761d9ca2f577e125633acee333d72';
+    var AD_DURATION_MS   = 6000;
+    var AD_SKIP_DELAY_MS = 2000;
 
-    function markShown(){ sessionStorage.setItem(AD_SESSION_KEY, '1'); }
+    var adOverlay, adTimerDisplay, adProgressFill, adSkipBtn, adStatus;
+    var adInterval = null, adTimeout = null, skipTimeout = null;
+    var pendingCallback = null;
 
-    var runBtn = document.getElementById('runBtn');
-    if (runBtn){
-      runBtn.addEventListener('click', function(){
-        if (sessionStorage.getItem(AD_SESSION_KEY)) return;
-        markShown();
-        setTimeout(function(){
-          var w = window.open('about:blank', '_blank');
-          if (w){
-            w.location = POPUNDER_URL;
-            w.blur();
-            window.focus();
-          }
-        }, 300);
-      });
+    function clearAdTimers(){
+      if (adInterval)  { clearInterval(adInterval);  adInterval  = null; }
+      if (adTimeout)   { clearTimeout(adTimeout);    adTimeout   = null; }
+      if (skipTimeout) { clearTimeout(skipTimeout);  skipTimeout = null; }
     }
+
+    function finish(){
+      clearAdTimers();
+      if (adStatus){ adStatus.textContent = 'Continuing…'; adStatus.classList.add('go'); }
+      if (adTimerDisplay) adTimerDisplay.textContent = '✓';
+      setTimeout(function(){
+        if (adOverlay){ adOverlay.classList.remove('active'); }
+        document.body.style.overflow = '';
+        var cb = pendingCallback; pendingCallback = null;
+        if (cb) cb();
+      }, 350);
+    }
+
+    function show(callback){
+      pendingCallback = callback;
+      var startTime = Date.now();
+      var endTime   = startTime + AD_DURATION_MS;
+
+      adOverlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      if (adSkipBtn) adSkipBtn.classList.remove('visible');
+      if (adStatus)  { adStatus.textContent = 'This only happens once per visit'; adStatus.classList.remove('go'); }
+      if (adTimerDisplay) adTimerDisplay.textContent = Math.ceil(AD_DURATION_MS / 1000);
+      if (adProgressFill) adProgressFill.style.width = '0%';
+
+      sessionStorage.setItem(AD_SESSION_KEY, '1');
+
+      try {
+        var w = window.open('about:blank', '_blank');
+        if (w){ w.location = POPUNDER_URL; w.blur(); window.focus(); }
+      } catch(e){ /* popup blocked - overlay still completes on its own */ }
+
+      adInterval = setInterval(function(){
+        var now       = Date.now();
+        var remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
+        var pct       = Math.min(100, ((now - startTime) / AD_DURATION_MS) * 100);
+        if (adTimerDisplay) adTimerDisplay.textContent = remaining;
+        if (adProgressFill) adProgressFill.style.width = pct + '%';
+        if (now >= endTime){ clearInterval(adInterval); adInterval = null; }
+      }, 100);
+
+      skipTimeout = setTimeout(function(){
+        if (adSkipBtn) adSkipBtn.classList.add('visible');
+      }, AD_SKIP_DELAY_MS);
+
+      adTimeout = setTimeout(finish, AD_DURATION_MS);
+    }
+
+    function gate(callback){
+      if (sessionStorage.getItem(AD_SESSION_KEY)){
+        callback();
+        return;
+      }
+      show(callback);
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+      adOverlay      = document.getElementById('adOverlay');
+      adTimerDisplay = document.getElementById('adTimerDisplay');
+      adProgressFill = document.getElementById('adProgressFill');
+      adSkipBtn      = document.getElementById('adSkipBtn');
+      adStatus       = document.getElementById('adStatus');
+      if (adSkipBtn) adSkipBtn.addEventListener('click', finish);
+    });
+
+    return { gate: gate };
   })();
 </script>
 
