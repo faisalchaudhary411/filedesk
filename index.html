@@ -274,6 +274,8 @@ input[type=file]{display:none;}
 footer{padding:34px 0 50px; border-top:1px solid var(--line);}
 footer .wrap{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;}
 footer p{color:var(--ink-soft); font-size:0.82rem; margin:0;}
+footer p a{color:var(--cobalt); text-decoration:none; font-weight:500;}
+footer p a:hover{text-decoration:underline;}
 
 .sr-only{
   position:absolute; width:1px;height:1px; padding:0;margin:-1px;
@@ -285,6 +287,14 @@ footer p{color:var(--ink-soft); font-size:0.82rem; margin:0;}
   .dropzone{padding:36px 16px;}
   footer .wrap{flex-direction:column; align-items:flex-start;}
 }
+
+/* ---------- ad slots ---------- */
+.ad-slot{padding:36px 0; border-top:1px solid var(--line); text-align:center;}
+.ad-slot .ad-label{font-family:var(--mono); font-size:0.68rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;}
+.ad-slot .ad-frame{display:inline-block; min-height:250px;}
+.filedesk-sticky-footer{position:fixed; bottom:0; left:0; right:0; z-index:9999; background:rgba(242,243,240,0.97); border-top:1px solid var(--line); padding:6px; text-align:center; display:none;}
+@media (max-width:768px){.filedesk-sticky-footer{display:block;}}
+body.has-sticky-ad{padding-bottom:70px;}
 </style>
 </head>
 <body>
@@ -366,6 +376,24 @@ footer p{color:var(--ink-soft); font-size:0.82rem; margin:0;}
     </div>
   </section>
 
+  <section class="ad-slot">
+    <div class="wrap">
+      <div class="ad-label">Advertisement</div>
+      <div class="ad-frame" id="adBanner300">
+        <script>
+          atOptions = {
+            'key' : 'e72ba3202761a83830e14eda9e7be52d',
+            'format' : 'iframe',
+            'height' : 250,
+            'width' : 300,
+            'params' : {}
+          };
+        </script>
+        <script src="https://www.highperformanceformat.com/e72ba3202761a83830e14eda9e7be52d/invoke.js"></script>
+      </div>
+    </div>
+  </section>
+
   <section class="allgrid">
     <div class="wrap">
       <h2>All tools</h2>
@@ -384,6 +412,7 @@ footer p{color:var(--ink-soft); font-size:0.82rem; margin:0;}
 <footer>
   <div class="wrap">
     <p>No files are uploaded. No account required.</p>
+    <p>Also from the same maker: <a href="https://voxcraft.site" target="_blank" rel="noopener">VoxCraft</a> (AI audio studio) &middot; <a href="https://qalamstudio.xyz" target="_blank" rel="noopener">QalamStudio</a> (Urdu writing AI)</p>
   </div>
 </footer>
 
@@ -1241,5 +1270,42 @@ footer p{color:var(--ink-soft); font-size:0.82rem; margin:0;}
 
 })();
 </script>
+<!-- Sticky Footer Ad (mobile only) -->
+<div class="filedesk-sticky-footer">
+  <script async="async" data-cfasync="false" src="https://pl30142952.effectivecpmnetwork.com/4aeffe08137b902653ea9208ed00633a/invoke.js"></script>
+  <div id="container-4aeffe08137b902653ea9208ed00633a"></div>
+</div>
+<script>document.body.classList.add('has-sticky-ad');</script>
+
+<!-- Adsterra auxiliary units -->
+<script src="https://pl30142949.effectivecpmnetwork.com/9a/c0/8a/9ac08ad8078d51032a123b5b773805f1.js"></script>
+<script src="https://pl30142951.effectivecpmnetwork.com/01/9d/bf/019dbf5ed23e8e55be2575e171fd512c.js"></script>
+
+<script>
+  // ── Session-based popunder: only once per session, on the main Convert click ──
+  (function(){
+    var AD_SESSION_KEY = 'filedesk_ad_shown';
+    var POPUNDER_URL = 'https://www.effectivecpmnetwork.com/pc3fwdj3ty?key=930761d9ca2f577e125633acee333d72';
+
+    function markShown(){ sessionStorage.setItem(AD_SESSION_KEY, '1'); }
+
+    var runBtn = document.getElementById('runBtn');
+    if (runBtn){
+      runBtn.addEventListener('click', function(){
+        if (sessionStorage.getItem(AD_SESSION_KEY)) return;
+        markShown();
+        setTimeout(function(){
+          var w = window.open('about:blank', '_blank');
+          if (w){
+            w.location = POPUNDER_URL;
+            w.blur();
+            window.focus();
+          }
+        }, 300);
+      });
+    }
+  })();
+</script>
+
 </body>
 </html>
