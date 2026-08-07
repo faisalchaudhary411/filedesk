@@ -337,22 +337,47 @@ footer .bottom p{font-size:0.75rem; color:var(--ink-soft); margin:0;}
   </section>
 
   <!-- AdSense Banner -->
-  <section class="ad-section">
+  <section class="ad-section" id="adSection">
     <div class="wrap">
       <div class="ad-label">Advertisement</div>
-      <div class="ad-frame" id="adBanner300">
+      <div class="ad-frame" id="adBanner300" style="min-height:250px;">
         <ins class="adsbygoogle"
              style="display:inline-block;width:300px;height:250px"
              data-ad-client="ca-pub-3088581560119805"
              data-ad-slot="YOUR_ADSENSE_SLOT_ID"></ins>
         <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
       </div>
-      <div class="ad-fallback" id="adFallback">
-        <p>🚀 <strong>FileDesk Pro</strong> — Batch process 100+ files at once</p>
-        <a href="#" onclick="alert('Coming soon!');return false;">Learn more →</a>
+      <div class="ad-fallback" id="adFallback" style="display:block;">
+        <div style="background:linear-gradient(135deg,#E7ECFF,#fff);border:1.5px solid #2453FF;border-radius:12px;padding:24px;text-align:center;max-width:300px;margin:0 auto;">
+          <div style="font-size:1.6rem;margin-bottom:8px;">🚀</div>
+          <p style="font-size:0.9rem;color:#14171A;margin:0 0 6px;font-weight:600;">FileDesk Pro</p>
+          <p style="font-size:0.8rem;color:#5C6066;margin:0 0 14px;">Batch process 100+ files. No ads. Priority support.</p>
+          <a href="#" onclick="alert('Coming soon!');return false;" style="display:inline-block;background:#2453FF;color:#fff;padding:8px 18px;border-radius:8px;text-decoration:none;font-size:0.8rem;font-weight:600;">Get early access →</a>
+        </div>
       </div>
     </div>
   </section>
+  <script>
+  (function(){
+    // Hide fallback if AdSense actually renders an ad
+    function checkAdLoaded(){
+      var frame = document.getElementById('adBanner300');
+      var fallback = document.getElementById('adFallback');
+      if(!frame || !fallback) return;
+      // Check if ins element has content or iframe loaded
+      var ins = frame.querySelector('ins.adsbygoogle');
+      var hasAd = ins && (ins.offsetHeight > 50 || ins.querySelector('iframe') || ins.innerHTML.trim().length > 0);
+      if(hasAd){
+        fallback.style.display = 'none';
+        frame.style.borderStyle = 'solid';
+      }
+    }
+    // Check multiple times
+    setTimeout(checkAdLoaded, 2000);
+    setTimeout(checkAdLoaded, 5000);
+    setTimeout(checkAdLoaded, 8000);
+  })();
+  </script>
 
   <section class="tools-section">
     <div class="wrap">

@@ -486,36 +486,73 @@ footer .bottom p{font-size:0.75rem; color:var(--ink-soft); margin:0;}
         </div>
       </div>
 
-      <section class="ad-section" style="margin-top:40px;">
+      <section class="ad-section" style="margin-top:40px;" id="adSectionInline">
         <div class="ad-label">Advertisement</div>
-        <div class="ad-frame-inline" id="adInline">
+        <div class="ad-frame-inline" id="adInline" style="min-height:250px;">
           <ins class="adsbygoogle"
                style="display:inline-block;width:300px;height:250px"
                data-ad-client="ca-pub-3088581560119805"
                data-ad-slot="YOUR_ADSENSE_SLOT_ID_2"></ins>
           <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
         </div>
-        <div class="ad-fallback" id="adInlineFallback">
-          <p>🚀 <strong>FileDesk Pro</strong> — Batch process 100+ files at once</p>
-          <a href="#" onclick="alert('Coming soon!');return false;">Learn more →</a>
+        <div class="ad-fallback" id="adInlineFallback" style="display:block;">
+          <div style="background:linear-gradient(135deg,#E7ECFF,#fff);border:1.5px solid #2453FF;border-radius:12px;padding:24px;text-align:center;max-width:300px;margin:0 auto;">
+            <div style="font-size:1.6rem;margin-bottom:8px;">🚀</div>
+            <p style="font-size:0.9rem;color:#14171A;margin:0 0 6px;font-weight:600;">FileDesk Pro</p>
+            <p style="font-size:0.8rem;color:#5C6066;margin:0 0 14px;">Batch process 100+ files. No ads. Priority support.</p>
+            <a href="#" onclick="alert('Coming soon!');return false;" style="display:inline-block;background:#2453FF;color:#fff;padding:8px 18px;border-radius:8px;text-decoration:none;font-size:0.8rem;font-weight:600;">Get early access →</a>
+          </div>
         </div>
+        <script>
+        (function(){
+          function checkInlineAd(){
+            var frame = document.getElementById('adInline');
+            var fallback = document.getElementById('adInlineFallback');
+            if(!frame || !fallback) return;
+            var ins = frame.querySelector('ins.adsbygoogle');
+            var hasAd = ins && (ins.offsetHeight > 50 || ins.querySelector('iframe') || ins.innerHTML.trim().length > 0);
+            if(hasAd){ fallback.style.display = 'none'; }
+          }
+          setTimeout(checkInlineAd, 2000);
+          setTimeout(checkInlineAd, 5000);
+          setTimeout(checkInlineAd, 8000);
+        })();
+        </script>
       </section>
     </div>
 
     <aside class="sidebar-ad">
       <div class="ad-label">Advertisement</div>
-      <div class="ad-frame" id="adSidebar">
+      <div class="ad-frame" id="adSidebar" style="min-height:600px;">
         <ins class="adsbygoogle"
              style="display:inline-block;width:300px;height:600px"
              data-ad-client="ca-pub-3088581560119805"
              data-ad-slot="YOUR_ADSENSE_SLOT_ID_3"></ins>
         <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
       </div>
-      <div class="ad-fallback" id="adSidebarFallback">
-        <p>🚀 <strong>FileDesk Pro</strong></p>
-        <p style="font-size:0.8rem;color:var(--ink-soft);">Batch process, priority support, no ads.</p>
-        <a href="#" onclick="alert('Coming soon!');return false;">Learn more →</a>
+      <div class="ad-fallback" id="adSidebarFallback" style="display:block;">
+        <div style="background:linear-gradient(135deg,#E7ECFF,#fff);border:1.5px solid #2453FF;border-radius:12px;padding:20px;text-align:center;">
+          <div style="font-size:1.4rem;margin-bottom:8px;">🚀</div>
+          <p style="font-size:0.85rem;color:#14171A;margin:0 0 4px;font-weight:600;">FileDesk Pro</p>
+          <p style="font-size:0.75rem;color:#5C6066;margin:0 0 12px;line-height:1.5;">Batch process 100+ files. No ads. Priority support.</p>
+          <a href="#" onclick="alert('Coming soon!');return false;" style="display:inline-block;background:#2453FF;color:#fff;padding:6px 14px;border-radius:8px;text-decoration:none;font-size:0.75rem;font-weight:600;">Learn more →</a>
+        </div>
       </div>
+      <script>
+      (function(){
+        function checkSidebarAd(){
+          var frame = document.getElementById('adSidebar');
+          var fallback = document.getElementById('adSidebarFallback');
+          if(!frame || !fallback) return;
+          var ins = frame.querySelector('ins.adsbygoogle');
+          var hasAd = ins && (ins.offsetHeight > 50 || ins.querySelector('iframe') || ins.innerHTML.trim().length > 0);
+          if(hasAd){ fallback.style.display = 'none'; }
+        }
+        setTimeout(checkSidebarAd, 2000);
+        setTimeout(checkSidebarAd, 5000);
+        setTimeout(checkSidebarAd, 8000);
+      })();
+      </script>
     </aside>
   </div>
 
