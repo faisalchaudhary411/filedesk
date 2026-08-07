@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Merge PDF | FileDesk</title>
+<meta name="description" content="Add two or more PDFs in the order you want them combined. Drag to reorder before processing.">
+<meta name="keywords" content="Merge PDF, PDF tool, free, online">
+<link rel="canonical" href="https://tools.voxcraft.site/merge-pdf.html">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2314171A'/%3E%3Crect x='24' y='24' width='52' height='52' rx='8' fill='%232453FF'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<meta property="og:title" content="Merge PDF | FileDesk">
+<meta property="og:description" content="Add two or more PDFs in the order you want them combined. Drag to reorder before processing.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tools.voxcraft.site/merge-pdf.html">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Merge PDF",
+  "applicationCategory": "UtilityApplication",
+  "operatingSystem": "Any",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+  "url": "https://tools.voxcraft.site/merge-pdf.html"
+}
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<script src="tools.js" defer></script>
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3088581560119805" crossorigin="anonymous"></script>
+
+<style>
+:root{
+  --paper:#F2F3F0;
+  --ink:#14171A;
+  --ink-soft:#5C6066;
+  --line:#D8DAD4;
+  --cobalt:#2453FF;
+  --cobalt-dim:#E7ECFF;
+  --cobalt-dark:#1a3fd6;
+  --amber:#F2A93B;
+  --card:#FFFFFF;
+  --radius:16px;
+  --radius-sm:10px;
+  --mono:'IBM Plex Mono', monospace;
+  --display:'Space Grotesk', sans-serif;
+  --body:'Inter', sans-serif;
+  --shadow:0 1px 3px rgba(20,23,26,0.06), 0 4px 12px rgba(20,23,26,0.04);
+  --shadow-lg:0 8px 30px rgba(20,23,26,0.08);
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--body);
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:70px;
+}
+a{color:inherit; text-decoration:none;}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px;}
+img,svg{display:block;}
+
+/* HEADER */
+header.site{
+  position:sticky; top:0; z-index:50;
+  background:rgba(242,243,240,0.88);
+  backdrop-filter:blur(10px) saturate(1.2);
+  border-bottom:1px solid var(--line);
+}
+.header-row{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 24px; max-width:1120px; margin:0 auto;
+}
+.logo{
+  font-family:var(--display); font-weight:700; font-size:1.3rem;
+  display:flex; align-items:center; gap:10px; letter-spacing:-0.02em;
+}
+.logo .mark{
+  width:28px;height:28px;border-radius:7px;background:var(--ink);
+  position:relative; flex-shrink:0;
+  box-shadow:0 2px 8px rgba(36,83,255,0.25);
+}
+.logo .mark::after{
+  content:"";position:absolute;inset:6px 6px 9px 6px;
+  background:var(--cobalt); border-radius:2px;
+}
+.tag{
+  font-family:var(--mono); font-size:0.68rem; color:var(--ink-soft);
+  border:1px solid var(--line); padding:3px 10px; border-radius:20px;
+  background:var(--card);
+}
+
+/* NAV */
+nav.main-nav{
+  background:var(--card);
+  border-bottom:1px solid var(--line);
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+nav.main-nav::-webkit-scrollbar{display:none;}
+.nav-inner{
+  display:flex; gap:2px; max-width:1120px; margin:0 auto; padding:0 16px;
+  width:max-content; min-width:100%;
+}
+.nav-link{
+  font-family:var(--body); font-weight:500; font-size:0.82rem;
+  white-space:nowrap; padding:12px 14px; background:transparent;
+  border:none; border-bottom:2.5px solid transparent; cursor:pointer;
+  color:var(--ink-soft); position:relative; top:1px;
+  text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+}
+.nav-link:hover{color:var(--ink);}
+.nav-link.active{
+  color:var(--cobalt); border-bottom-color:var(--cobalt); font-weight:600;
+}
+.nav-link:focus-visible{outline:2px solid var(--cobalt); outline-offset:-2px;}
+
+/* TOOL PAGE HERO */
+.tool-hero{padding:48px 0 32px;}
+.tool-hero h1{
+  font-family:var(--display); font-weight:700; letter-spacing:-0.03em;
+  font-size:clamp(1.6rem, 4vw, 2.4rem); margin:0 0 10px; max-width:640px; line-height:1.15;
+}
+.tool-hero .sub{
+  color:var(--ink-soft); font-size:1rem; max-width:520px; margin:0 0 28px; line-height:1.6;
+}
+.tool-pill{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:var(--mono); font-size:0.7rem; text-transform:uppercase;
+  letter-spacing:0.08em; color:var(--cobalt);
+  background:var(--cobalt-dim); padding:6px 14px; border-radius:20px;
+  margin-bottom:14px; font-weight:500;
+}
+
+/* DROPZONE */
+.dropzone-wrap{max-width:600px; margin:0 auto;}
+.dropzone{
+  background:var(--card);
+  border:2px dashed var(--line);
+  border-radius:var(--radius);
+  padding:48px 28px;
+  text-align:center;
+  position:relative;
+  transition:border-color .15s ease, background .15s ease, box-shadow .15s ease;
+  box-shadow:var(--shadow);
+}
+.dropzone:hover{border-color:var(--cobalt-dim);}
+.dropzone.dragover{
+  border-color:var(--cobalt); background:var(--cobalt-dim);
+  box-shadow:0 0 0 4px var(--cobalt-dim);
+}
+.dropzone .icon{
+  width:60px;height:60px;margin:0 auto 20px;
+  border-radius:50%; background:var(--cobalt-dim);
+  display:flex; align-items:center; justify-content:center;
+}
+.dropzone .icon svg{width:26px;height:26px;}
+.dz-title{font-family:var(--display); font-weight:600; font-size:1.2rem; margin-bottom:6px;}
+.dz-sub{color:var(--ink-soft); font-size:0.92rem; margin-bottom:24px;}
+.btn{
+  font-family:var(--body); font-weight:600; font-size:0.94rem;
+  background:var(--ink); color:#fff; border:none;
+  padding:14px 28px; border-radius:10px; cursor:pointer;
+  transition:transform .1s ease, background .15s ease, box-shadow .15s ease;
+  display:inline-flex; align-items:center; gap:8px;
+  box-shadow:0 2px 8px rgba(20,23,26,0.12);
+}
+.btn:hover{background:#000; box-shadow:0 4px 16px rgba(20,23,26,0.18);}
+.btn:active{transform:scale(0.97);}
+.btn:focus-visible{outline:2px solid var(--cobalt); outline-offset:2px;}
+.btn.secondary{
+  background:var(--card); color:var(--ink); border:1.5px solid var(--line);
+  box-shadow:none;
+}
+.btn.secondary:hover{border-color:var(--ink); background:var(--card); box-shadow:var(--shadow);}
+.btn.cobalt{background:var(--cobalt);}
+.btn.cobalt:hover{background:var(--cobalt-dark);}
+.btn[disabled]{opacity:0.5; cursor:not-allowed; transform:none; box-shadow:none;}
+input[type=file]{display:none;}
+
+/* FILE LIST */
+.filelist{
+  text-align:left; margin:20px auto 0; max-width:100%;
+  border-top:1px solid var(--line);
+}
+.file-row{
+  display:flex; align-items:center; gap:10px;
+  padding:10px 0; border-bottom:1px solid var(--line);
+  font-size:0.88rem;
+}
+.file-row .fname{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.file-row .fsize{font-family:var(--mono); color:var(--ink-soft); font-size:0.74rem;}
+.file-row button{
+  background:none;border:none;color:var(--ink-soft);cursor:pointer;font-size:1rem;
+  line-height:1; padding:4px; border-radius:4px;
+}
+.file-row button:hover{color:#C1443C; background:rgba(193,68,60,0.08);}
+.file-row .drag-handle{
+  cursor:grab; color:var(--ink-soft); font-size:1rem; padding:4px;
+  user-select:none; border-radius:4px;
+}
+.file-row .drag-handle:hover{background:var(--cobalt-dim); color:var(--cobalt);}
+.file-row .drag-handle:active{cursor:grabbing;}
+.file-row.dragging{opacity:0.5;}
+
+/* OPTIONS */
+.opts-row{
+  display:flex; flex-wrap:wrap; gap:12px; justify-content:center;
+  margin:18px 0 6px; font-size:0.85rem;
+}
+.opts-row label{
+  display:flex; align-items:center; gap:8px; cursor:pointer;
+  font-family:var(--mono); font-size:0.76rem; color:var(--ink-soft);
+  background:var(--paper); padding:8px 14px; border-radius:8px;
+  border:1px solid var(--line);
+}
+.opts-row input, .opts-row select{
+  font-family:var(--mono); border:1px solid var(--line); border-radius:6px;
+  padding:5px 10px; font-size:0.8rem; background:var(--card);
+}
+.opts-row input:focus, .opts-row select:focus{
+  outline:2px solid var(--cobalt); border-color:var(--cobalt);
+}
+
+/* WARNING BANNER */
+.warn-banner{
+  background:#FFF8E1; border:1px solid #F2D88B; color:#8A6D1F;
+  padding:10px 16px; border-radius:8px; font-size:0.82rem; margin:14px auto 0;
+  max-width:100%; display:none; text-align:left;
+}
+.warn-banner.visible{display:block;}
+
+/* PROGRESS */
+.progress-wrap{margin-top:24px;}
+.bar-track{
+  height:6px;background:var(--line);border-radius:6px;overflow:hidden;max-width:380px;margin:0 auto 10px;
+}
+.bar-fill{height:100%; width:0%; background:var(--cobalt); transition:width .2s ease;}
+.progress-label{font-family:var(--mono); font-size:0.76rem; color:var(--ink-soft);}
+
+/* DONE STATE */
+.stamp{
+  width:64px;height:64px;border-radius:50%;
+  border:3px solid #2E8B57; color:#2E8B57;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 16px; font-size:28px;
+  transform:scale(0.4) rotate(-15deg); opacity:0;
+  animation:stampIn .35s cubic-bezier(.2,1.4,.4,1) forwards;
+}
+@keyframes stampIn{ to{ transform:scale(1) rotate(-8deg); opacity:1; } }
+
+.result-list{margin-top:18px;}
+.result-row{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  background:var(--paper); border:1px solid var(--line); border-radius:10px;
+  padding:12px 16px; margin-bottom:8px;
+  text-align:left;
+}
+.result-row .rname{font-size:0.88rem; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.result-row a{
+  font-family:var(--mono); font-size:0.74rem; color:var(--cobalt); text-decoration:none;
+  border:1.5px solid var(--cobalt); padding:6px 12px; border-radius:7px; flex-shrink:0;
+  font-weight:500; transition:all .15s ease;
+}
+.result-row a:hover{background:var(--cobalt); color:#fff;}
+
+.error-msg{
+  margin-top:16px; color:#A8362B; background:#FBEAE8; border:1px solid #F2C5BF;
+  padding:12px 16px; border-radius:8px; font-size:0.85rem;
+}
+
+/* SIDEBAR AD */
+.tool-layout{display:grid; grid-template-columns:1fr 300px; gap:32px; max-width:1120px; margin:0 auto; padding:0 24px;}
+.sidebar-ad{position:sticky; top:120px;}
+.sidebar-ad .ad-label{
+  font-family:var(--mono); font-size:0.65rem; color:var(--ink-soft);
+  text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px; text-align:center;
+}
+.sidebar-ad .ad-frame{
+  background:var(--card); border:1px dashed var(--line); border-radius:var(--radius-sm);
+  min-height:600px; width:300px;
+}
+.sidebar-ad .ad-frame.loaded{border-style:solid;}
+
+/* RELATED TOOLS */
+.related{padding:50px 0; border-top:1px solid var(--line);}
+.related h2{
+  font-family:var(--display); font-weight:600; font-size:1.2rem; margin:0 0 20px;
+}
+.related-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px;}
+.related-card{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius-sm);
+  padding:16px; text-decoration:none; display:flex; align-items:center; gap:12px;
+  transition:all .15s ease;
+}
+.related-card:hover{border-color:var(--cobalt); transform:translateY(-2px); box-shadow:var(--shadow);}
+.related-card .ic{width:36px;height:36px;border-radius:8px;background:var(--cobalt-dim);
+  display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+.related-card span{font-family:var(--display); font-size:0.88rem; font-weight:600;}
+
+/* AD SECTIONS */
+.ad-section{padding:36px 0; border-top:1px solid var(--line); text-align:center;}
+.ad-section .ad-label{
+  font-family:var(--mono); font-size:0.65rem; color:var(--ink-soft);
+  text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px;
+}
+.ad-frame-inline{display:inline-block; min-height:250px; background:var(--card);
+  border:1px dashed var(--line); border-radius:var(--radius-sm); width:300px;
+}
+.ad-fallback{display:none; padding:20px; text-align:center;}
+.ad-fallback.visible{display:block;}
+.ad-fallback p{font-size:0.85rem; color:var(--ink-soft); margin:0 0 8px;}
+.ad-fallback a{color:var(--cobalt); font-weight:600; font-size:0.85rem;}
+
+/* STICKY AD */
+.ad-sticky{
+  position:fixed; bottom:0; left:0; right:0; z-index:40;
+  background:var(--card); border-top:1px solid var(--line);
+  padding:6px 0; text-align:center; box-shadow:0 -2px 10px rgba(0,0,0,0.04);
+  transform:translateY(100%); transition:transform .35s ease;
+}
+.ad-sticky.visible{transform:translateY(0);}
+.ad-sticky .ad-close{
+  position:absolute; top:2px; right:10px; background:none; border:none;
+  color:var(--ink-soft); cursor:pointer; font-size:1.3rem; padding:4px 8px; line-height:1;
+}
+.ad-sticky .ad-close:hover{color:var(--ink);}
+
+/* GATE OVERLAY */
+.ad-overlay{
+  position:fixed; inset:0; background:rgba(20,23,26,0.78);
+  backdrop-filter:blur(6px); z-index:100000;
+  display:none; align-items:center; justify-content:center; padding:20px;
+}
+.ad-overlay.active{display:flex;}
+.ad-box{
+  background:var(--card); border-radius:18px; padding:36px 32px;
+  max-width:380px; width:100%; text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,0.25);
+}
+.ad-eyebrow{
+  font-family:var(--mono); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em;
+  color:var(--cobalt); background:var(--cobalt-dim); display:inline-block;
+  padding:4px 12px; border-radius:20px; margin-bottom:16px;
+}
+.ad-box h3{font-family:var(--display); font-size:1.2rem; margin:0 0 10px;}
+.ad-sub{color:var(--ink-soft); font-size:0.88rem; margin:0 0 24px; line-height:1.5;}
+.ad-timer-display{
+  font-family:var(--display); font-weight:700; font-size:2.8rem; color:var(--ink); line-height:1;
+}
+.ad-timer-label{font-family:var(--mono); font-size:0.68rem; color:var(--ink-soft); letter-spacing:0.06em; margin:6px 0 18px;}
+.ad-progress-wrap{height:5px; background:var(--line); border-radius:5px; overflow:hidden; margin-bottom:24px;}
+.ad-progress-fill{height:100%; width:0%; background:var(--cobalt); transition:width .1s linear;}
+.ad-skip-btn{
+  display:none; font-family:var(--body); font-weight:600; font-size:0.92rem;
+  background:var(--ink); color:#fff; border:none; padding:12px 24px; border-radius:10px; cursor:pointer;
+}
+.ad-skip-btn.visible{display:inline-flex; animation:fadeUp .25s ease both;}
+.ad-skip-btn:hover{background:#000;}
+.ad-status{margin-top:14px; font-size:0.78rem; color:var(--ink-soft);}
+.ad-status.go{color:#2E8B57; font-weight:600;}
+@keyframes fadeUp{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+/* FOOTER */
+footer{padding:40px 0 60px; border-top:1px solid var(--line); background:var(--card);}
+footer .wrap{display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:20px;}
+footer .col{flex:1; min-width:200px;}
+footer .col h4{font-family:var(--display); font-size:0.9rem; margin:0 0 12px;}
+footer .col a{display:block; color:var(--ink-soft); font-size:0.82rem; margin-bottom:8px;}
+footer .col a:hover{color:var(--cobalt);}
+footer .bottom{
+  max-width:1120px; margin:28px auto 0; padding:20px 24px 0;
+  border-top:1px solid var(--line); text-align:center;
+}
+footer .bottom p{font-size:0.75rem; color:var(--ink-soft); margin:0;}
+
+@media (max-width: 900px){
+  .tool-layout{grid-template-columns:1fr;}
+  .sidebar-ad{display:none;}
+}
+@media (max-width: 760px){
+  .related-grid{grid-template-columns:1fr;}
+  .dropzone{padding:36px 20px;}
+}
+</style>
+</head>
+<body>
+
+<div class="ad-overlay" id="adOverlay">
+  <div class="ad-box">
+    <div class="ad-eyebrow">Support FileDesk</div>
+    <h3>Your file is almost ready</h3>
+    <p class="ad-sub">This helps keep FileDesk free. Your download starts automatically when the timer ends.</p>
+    <div class="ad-timer-display" id="adTimerDisplay">5</div>
+    <div class="ad-timer-label">SECONDS LEFT</div>
+    <div class="ad-progress-wrap">
+      <div class="ad-progress-fill" id="adProgressFill"></div>
+    </div>
+    <button class="ad-skip-btn" id="adSkipBtn">Skip &amp; continue now →</button>
+    <div class="ad-status" id="adStatus">Shown once per session</div>
+  </div>
+</div>
+
+<div class="ad-sticky" id="adSticky">
+  <button class="ad-close" id="adStickyClose">×</button>
+  <div id="adStickyContent">
+    <script src="https://pl30142951.effectivecpmnetwork.com/01/9d/bf/019dbf5ed23e8e55be2575e171fd512c.js"></script>
+  </div>
+</div>
+
+<header class="site">
+  <div class="header-row">
+    <a href="index.html" class="logo" style="text-decoration:none;color:inherit;">
+      <span class="mark" aria-hidden="true"></span>FileDesk
+    </a>
+    <span class="tag">Free · Private · Fast</span>
+  </div>
+  <nav class="main-nav" aria-label="PDF tools">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-link">Home</a><a href="merge-pdf.html" class="nav-link active">Merge PDF</a><a href="split-pdf.html" class="nav-link">Split PDF</a><a href="compress-pdf.html" class="nav-link">Compress</a><a href="pdf-to-word.html" class="nav-link">PDF → Word</a><a href="word-to-pdf.html" class="nav-link">Word → PDF</a><a href="pdf-to-jpg.html" class="nav-link">PDF → JPG</a><a href="jpg-to-pdf.html" class="nav-link">JPG → PDF</a><a href="rotate-pdf.html" class="nav-link">Rotate</a><a href="delete-pages.html" class="nav-link">Delete Pages</a><a href="page-numbers.html" class="nav-link">Page Numbers</a><a href="watermark-pdf.html" class="nav-link">Watermark</a><a href="protect-pdf.html" class="nav-link">Protect</a><a href="unlock-pdf.html" class="nav-link">Unlock</a>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <section class="tool-hero">
+    <div class="wrap">
+      <span class="tool-pill">● Merge PDF</span>
+      <h1>Merge PDFs into one file</h1>
+      <p class="sub">Add two or more PDFs in the order you want them combined. Drag to reorder before processing.</p>
+    </div>
+  </section>
+
+  <div class="tool-layout">
+    <div class="tool-main">
+      <div class="dropzone-wrap">
+        <div class="dropzone" id="dropzone">
+          <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#2453FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+          </div>
+          <div id="dzIdle">
+            <div class="dz-title" id="dzTitle">Drag & drop PDFs here</div>
+            <div class="dz-sub" id="dzSub">add two or more files to merge</div>
+            <button class="btn cobalt" id="chooseBtn" type="button">Choose file</button>
+            <input type="file" id="fileInput" accept=".pdf">
+          </div>
+
+          <div id="dzFiles" style="display:none;">
+            <div class="filelist" id="fileListEl"></div>
+            <div class="opts-row" id="optsRow"></div>
+            <div class="warn-banner" id="warnBanner"></div>
+            <div style="margin-top:18px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+              <button class="btn secondary" id="addMoreBtn" type="button" style="display:none;">+ Add another file</button>
+              <button class="btn cobalt" id="runBtn" type="button">Process</button>
+            </div>
+          </div>
+
+          <div id="dzWorking" style="display:none;">
+            <div class="progress-wrap">
+              <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+              <div class="progress-label" id="progressLabel">Processing…</div>
+            </div>
+          </div>
+
+          <div id="dzDone" style="display:none;">
+            <div class="stamp" aria-hidden="true">✓</div>
+            <div class="dz-title">Done</div>
+            <div class="result-list" id="resultList"></div>
+            <button class="btn secondary" id="resetBtn" type="button" style="margin-top:14px;">Convert another file</button>
+          </div>
+
+          <div id="dzError" style="display:none;" class="error-msg"></div>
+        </div>
+      </div>
+
+      <section class="ad-section" style="margin-top:40px;">
+        <div class="ad-label">Advertisement</div>
+        <div class="ad-frame-inline" id="adInline">
+          <ins class="adsbygoogle"
+               style="display:inline-block;width:300px;height:250px"
+               data-ad-client="ca-pub-3088581560119805"
+               data-ad-slot="YOUR_ADSENSE_SLOT_ID_2"></ins>
+          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+        <div class="ad-fallback" id="adInlineFallback">
+          <p>🚀 <strong>FileDesk Pro</strong> — Batch process 100+ files at once</p>
+          <a href="#" onclick="alert('Coming soon!');return false;">Learn more →</a>
+        </div>
+      </section>
+    </div>
+
+    <aside class="sidebar-ad">
+      <div class="ad-label">Advertisement</div>
+      <div class="ad-frame" id="adSidebar">
+        <ins class="adsbygoogle"
+             style="display:inline-block;width:300px;height:600px"
+             data-ad-client="ca-pub-3088581560119805"
+             data-ad-slot="YOUR_ADSENSE_SLOT_ID_3"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      </div>
+      <div class="ad-fallback" id="adSidebarFallback">
+        <p>🚀 <strong>FileDesk Pro</strong></p>
+        <p style="font-size:0.8rem;color:var(--ink-soft);">Batch process, priority support, no ads.</p>
+        <a href="#" onclick="alert('Coming soon!');return false;">Learn more →</a>
+      </div>
+    </aside>
+  </div>
+
+  <section class="related">
+    <div class="wrap">
+      <h2>Related tools</h2>
+      <div class="related-grid">
+        <a href="split-pdf.html" class="related-card"><div class="ic">✂️</div><span>Split PDF</span></a><a href="compress-pdf.html" class="related-card"><div class="ic">📦</div><span>Compress PDF</span></a><a href="pdf-to-word.html" class="related-card"><div class="ic">📝</div><span>PDF to Word</span></a><a href="word-to-pdf.html" class="related-card"><div class="ic">📄</div><span>Word to PDF</span></a><a href="pdf-to-jpg.html" class="related-card"><div class="ic">🖼️</div><span>PDF to JPG</span></a><a href="jpg-to-pdf.html" class="related-card"><div class="ic">📷</div><span>JPG to PDF</span></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="col">
+      <h4>FileDesk</h4>
+      <a href="index.html">Home</a>
+      <a href="#" onclick="alert('Coming soon!');return false;">FileDesk Pro</a>
+      <a href="#" onclick="alert('Coming soon!');return false;">API</a>
+    </div>
+    <div class="col">
+      <h4>Tools</h4>
+      <a href="merge-pdf.html">Merge PDF</a>
+      <a href="split-pdf.html">Split PDF</a>
+      <a href="compress-pdf.html">Compress PDF</a>
+      <a href="pdf-to-word.html">PDF to Word</a>
+    </div>
+    <div class="col">
+      <h4>More</h4>
+      <a href="https://voxcraft.site" target="_blank" rel="noopener">VoxCraft</a>
+      <a href="https://qalamstudio.xyz" target="_blank" rel="noopener">QalamStudio</a>
+    </div>
+  </div>
+  <div class="bottom">
+    <p>© <span id="copyYear">2026</span> FileDesk. All rights reserved. · Made with ❤️ in Pakistan</p>
+  </div>
+</footer>
+
+<script>document.getElementById("copyYear").textContent = new Date().getFullYear();</script>
+
+<script>
+(function(){
+"use strict";
+
+window.FileDeskUtils = {
+  fmtSize: function(bytes){
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + " KB";
+    return (bytes/(1024*1024)).toFixed(1) + " MB";
+  },
+  escapeHtml: function(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return ({"&":"&amp;","<":"&lt;",">":"&gt;",""":"&quot;","'":"&#39;"})[c];
+    });
+  },
+  readAsArrayBuffer: function(file){
+    return new Promise(function(resolve, reject){
+      var r = new FileReader();
+      r.onload = function(){ resolve(r.result); };
+      r.onerror = reject;
+      r.readAsArrayBuffer(file);
+    });
+  },
+  baseName: function(name){
+    return name.replace(/\.[^/.]+$/, "");
+  },
+  blobUrls: [],
+  revokeAllUrls: function(){
+    window.FileDeskUtils.blobUrls.forEach(function(url){ URL.revokeObjectURL(url); });
+    window.FileDeskUtils.blobUrls = [];
+  },
+  makeDownloadUrl: function(blob, name){
+    var url = URL.createObjectURL(blob);
+    window.FileDeskUtils.blobUrls.push(url);
+    return url;
+  }
+};
+
+// Ad Gate System
+window.FileDeskAds = (function(){
+  var AD_SESSION_KEY = 'filedesk_ad_shown_v2';
+  var AD_DURATION_MS = 5000;
+  var AD_SKIP_DELAY_MS = 1500;
+  var adOverlay, adTimerDisplay, adProgressFill, adSkipBtn, adStatus;
+  var adInterval = null, adTimeout = null, skipTimeout = null;
+  var pendingCallback = null;
+
+  function clearAdTimers(){
+    if (adInterval)  { clearInterval(adInterval);  adInterval  = null; }
+    if (adTimeout)   { clearTimeout(adTimeout);    adTimeout   = null; }
+    if (skipTimeout) { clearTimeout(skipTimeout);  skipTimeout = null; }
+  }
+
+  function finish(){
+    clearAdTimers();
+    if (adStatus){ adStatus.textContent = 'Continuing...'; adStatus.classList.add('go'); }
+    if (adTimerDisplay) adTimerDisplay.textContent = '✓';
+    setTimeout(function(){
+      if (adOverlay){ adOverlay.classList.remove('active'); }
+      document.body.style.overflow = '';
+      var cb = pendingCallback; pendingCallback = null;
+      if (cb) cb();
+    }, 300);
+  }
+
+  function show(callback){
+    pendingCallback = callback;
+    var startTime = Date.now();
+    var endTime = startTime + AD_DURATION_MS;
+
+    adOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    if (adSkipBtn) adSkipBtn.classList.remove('visible');
+    if (adStatus)  { adStatus.textContent = 'Shown once per session'; adStatus.classList.remove('go'); }
+    if (adTimerDisplay) adTimerDisplay.textContent = Math.ceil(AD_DURATION_MS / 1000);
+    if (adProgressFill) adProgressFill.style.width = '0%';
+
+    sessionStorage.setItem(AD_SESSION_KEY, '1');
+
+    adInterval = setInterval(function(){
+      var now = Date.now();
+      var remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
+      var pct = Math.min(100, ((now - startTime) / AD_DURATION_MS) * 100);
+      if (adTimerDisplay) adTimerDisplay.textContent = remaining;
+      if (adProgressFill) adProgressFill.style.width = pct + '%';
+      if (now >= endTime){ clearInterval(adInterval); adInterval = null; }
+    }, 100);
+
+    skipTimeout = setTimeout(function(){
+      if (adSkipBtn) adSkipBtn.classList.add('visible');
+    }, AD_SKIP_DELAY_MS);
+
+    adTimeout = setTimeout(finish, AD_DURATION_MS);
+  }
+
+  function gate(callback){
+    if (sessionStorage.getItem(AD_SESSION_KEY)){ callback(); return; }
+    show(callback);
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    adOverlay = document.getElementById('adOverlay');
+    adTimerDisplay = document.getElementById('adTimerDisplay');
+    adProgressFill = document.getElementById('adProgressFill');
+    adSkipBtn = document.getElementById('adSkipBtn');
+    adStatus = document.getElementById('adStatus');
+    if (adSkipBtn) adSkipBtn.addEventListener('click', finish);
+  });
+
+  return { gate: gate };
+})();
+
+// Sticky ad
+setTimeout(function(){
+  var el = document.getElementById("adSticky");
+  if (el) el.classList.add("visible");
+}, 2500);
+document.addEventListener('DOMContentLoaded', function(){
+  var closeBtn = document.getElementById("adStickyClose");
+  if (closeBtn) closeBtn.addEventListener("click", function(){
+    document.getElementById("adSticky").classList.remove("visible");
+  });
+});
+
+// Ad fallback detection
+document.addEventListener('DOMContentLoaded', function(){
+  setTimeout(function(){
+    var frames = document.querySelectorAll('.ad-frame, .ad-frame-inline');
+    frames.forEach(function(frame){
+      if (frame.offsetHeight < 50) {
+        frame.style.display = "none";
+        var fallback = frame.parentElement.querySelector('.ad-fallback');
+        if (fallback) fallback.classList.add("visible");
+      } else {
+        frame.classList.add("loaded");
+      }
+    });
+  }, 4000);
+});
+
+// PDF.js init
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+}
+
+})();
+</script>
+
+<script>
+(function(){
+"use strict";
+
+var TOOL_ID = "merge-pdf";
+var TOOL_MULTI = true;
+var TOOL_ACCEPT = ".pdf";
+var TOOL_GATED = false;
+var TOOL_OPTS = null;
+var TOOL_WARN = "";
+
+var state = { files: [] };
+
+var dropzone = document.getElementById("dropzone");
+var fileInput = document.getElementById("fileInput");
+var chooseBtn = document.getElementById("chooseBtn");
+var addMoreBtn = document.getElementById("addMoreBtn");
+var runBtn = document.getElementById("runBtn");
+var resetBtn = document.getElementById("resetBtn");
+var dzIdle = document.getElementById("dzIdle");
+var dzFiles = document.getElementById("dzFiles");
+var dzWorking = document.getElementById("dzWorking");
+var dzDone = document.getElementById("dzDone");
+var dzError = document.getElementById("dzError");
+var fileListEl = document.getElementById("fileListEl");
+var optsRow = document.getElementById("optsRow");
+var resultList = document.getElementById("resultList");
+var barFill = document.getElementById("barFill");
+var progressLabel = document.getElementById("progressLabel");
+var warnBanner = document.getElementById("warnBanner");
+
+fileInput.multiple = TOOL_MULTI;
+addMoreBtn.style.display = TOOL_MULTI ? "inline-flex" : "none";
+if (TOOL_WARN) { warnBanner.textContent = TOOL_WARN; warnBanner.classList.add("visible"); }
+
+function showState(s){
+  dzIdle.style.display = s==="idle" ? "block" : "none";
+  dzFiles.style.display = s==="files" ? "block" : "none";
+  dzWorking.style.display = s==="working" ? "block" : "none";
+  dzDone.style.display = s==="done" ? "block" : "none";
+  dzError.style.display = s==="error" ? "block" : "none";
+}
+
+function renderFileList(){
+  fileListEl.innerHTML = "";
+  state.files.forEach(function(f, idx){
+    var row = document.createElement("div");
+    row.className = "file-row";
+    row.setAttribute("data-index", idx);
+    row.setAttribute("draggable", "true");
+
+    var handle = document.createElement("span");
+    handle.className = "drag-handle";
+    handle.textContent = "☰";
+    handle.title = "Drag to reorder";
+    if (!TOOL_MULTI) handle.style.display = "none";
+
+    var fname = document.createElement("span");
+    fname.className = "fname";
+    fname.textContent = f.name;
+
+    var fsize = document.createElement("span");
+    fsize.className = "fsize";
+    fsize.textContent = window.FileDeskUtils.fmtSize(f.size);
+
+    var rm = document.createElement("button");
+    rm.type = "button";
+    rm.setAttribute("aria-label","Remove file");
+    rm.textContent = "✕";
+    rm.addEventListener("click", function(){
+      state.files.splice(idx,1);
+      if (state.files.length === 0){ showState("idle"); } else { renderFileList(); }
+    });
+
+    row.appendChild(handle);
+    row.appendChild(fname);
+    row.appendChild(fsize);
+    row.appendChild(rm);
+
+    if (TOOL_MULTI) {
+      row.addEventListener("dragstart", function(e){
+        e.dataTransfer.setData("text/plain", idx);
+        row.classList.add("dragging");
+      });
+      row.addEventListener("dragend", function(){ row.classList.remove("dragging"); });
+      row.addEventListener("dragover", function(e){ e.preventDefault(); });
+      row.addEventListener("drop", function(e){
+        e.preventDefault();
+        var fromIdx = parseInt(e.dataTransfer.getData("text/plain"), 10);
+        var toIdx = parseInt(row.getAttribute("data-index"), 10);
+        if (fromIdx !== toIdx && !isNaN(fromIdx) && !isNaN(toIdx)) {
+          var moved = state.files.splice(fromIdx, 1)[0];
+          state.files.splice(toIdx, 0, moved);
+          renderFileList();
+        }
+      });
+    }
+
+    fileListEl.appendChild(row);
+  });
+
+  optsRow.innerHTML = "";
+  if (TOOL_OPTS){
+    TOOL_OPTS.forEach(function(opt){
+      var wrap = document.createElement("label");
+      if (opt.type === "text"){
+        wrap.innerHTML = opt.label + ': <input type="text" data-key="'+opt.key+'">';
+      } else if (opt.type === "select"){
+        var optsHtml = opt.options.map(function(o){ return '<option value="'+o[0]+'">'+o[1]+'</option>'; }).join("");
+        wrap.innerHTML = opt.label + ': <select data-key="'+opt.key+'">'+optsHtml+'</select>';
+      }
+      optsRow.appendChild(wrap);
+    });
+  }
+}
+
+function getOptValues(){
+  var vals = {};
+  optsRow.querySelectorAll("[data-key]").forEach(function(el){ vals[el.getAttribute("data-key")] = el.value; });
+  return vals;
+}
+
+function addFiles(fileListArg){
+  var arr = Array.prototype.slice.call(fileListArg);
+  if (!TOOL_MULTI){ state.files = arr.slice(0,1); }
+  else { state.files = state.files.concat(arr); }
+  if (state.files.length){ renderFileList(); showState("files"); }
+}
+
+chooseBtn.addEventListener("click", function(){ fileInput.click(); });
+addMoreBtn.addEventListener("click", function(){ fileInput.click(); });
+fileInput.addEventListener("change", function(e){ if (e.target.files.length) addFiles(e.target.files); });
+
+["dragenter","dragover"].forEach(function(evt){
+  dropzone.addEventListener(evt, function(e){ e.preventDefault(); dropzone.classList.add("dragover"); });
+});
+["dragleave","drop"].forEach(function(evt){
+  dropzone.addEventListener(evt, function(e){ e.preventDefault(); dropzone.classList.remove("dragover"); });
+});
+dropzone.addEventListener("drop", function(e){
+  if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length){ addFiles(e.dataTransfer.files); }
+});
+
+resetBtn.addEventListener("click", function(){
+  state.files = [];
+  window.FileDeskUtils.revokeAllUrls();
+  resultList.innerHTML = "";
+  fileInput.value = "";
+  showState("idle");
+});
+
+function setProgress(pct, label){
+  barFill.style.width = pct + "%";
+  progressLabel.textContent = label || "";
+}
+
+function runConversion(){
+  if (!state.files.length) return;
+  window.FileDeskUtils.revokeAllUrls();
+  showState("working");
+  setProgress(5, "Reading file…");
+
+  Promise.resolve()
+    .then(function(){ return window.FileDeskTools[TOOL_ID](state.files, getOptValues(), setProgress); })
+    .then(function(outputs){
+      setProgress(100, "Done");
+      resultList.innerHTML = "";
+      outputs.forEach(function(o){
+        var url = window.FileDeskUtils.makeDownloadUrl(o.blob, o.name);
+        var row = document.createElement("div");
+        row.className = "result-row";
+        row.innerHTML = '<span class="rname">'+window.FileDeskUtils.escapeHtml(o.name)+'</span>';
+        var a = document.createElement("a");
+        a.href = url; a.download = o.name; a.textContent = "Download";
+        row.appendChild(a);
+        resultList.appendChild(row);
+      });
+      showState("done");
+    })
+    .catch(function(err){
+      console.error(err);
+      dzError.textContent = "Something went wrong: " + (err && err.message ? err.message : "could not process this file. Try a different file or tool.");
+      showState("error");
+    });
+}
+
+runBtn.addEventListener("click", function(){
+  if (!state.files.length) return;
+  if (TOOL_GATED && window.FileDeskAds && typeof window.FileDeskAds.gate === "function"){
+    window.FileDeskAds.gate(runConversion);
+  } else {
+    runConversion();
+  }
+});
+
+})();
+</script>
+
+</body>
+</html>
