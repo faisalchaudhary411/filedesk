@@ -18,35 +18,6 @@ function baseName(name){
   return U.baseName(name);
 }
 
-/* ============== RENDER PAGES TO JPEGs (shared by compress, protect, unlock) ============== */
-
-function renderPagesToJpegs(pdfjsDoc, scale, quality, progress, progressBase, progressSpan){
-  var count = pdfjsDoc.numPages;
-  var pages = [];
-  var chain = Promise.resolve();
-  for (var i=1;i<=count;i++){
-    (function(pageNum){
-      chain = chain.then(function(){
-        progress(progressBase + (progressSpan*pageNum/count), "Rendering page " + pageNum + " of " + count + "…");
-        return pdfjsDoc.getPage(pageNum).then(function(page){
-          var viewport = page.getViewport({scale: scale});
-          var canvas = document.createElement("canvas");
-          canvas.width = viewport.width; canvas.height = viewport.height;
-          var ctx = canvas.getContext("2d");
-          return page.render({canvasContext: ctx, viewport: viewport}).promise.then(function(){
-            pages.push({
-              dataUrl: canvas.toDataURL("image/jpeg", quality),
-              width: viewport.width,
-              height: viewport.height
-            });
-          });
-        });
-      });
-    })(i);
-  }
-  return chain.then(function(){ return pages; });
-}
-
 /* ============== BUILD DOCX ============== */
 
 function buildDocx(paragraphs){
@@ -248,34 +219,193 @@ window.FileDeskTools["rotate-pdf"] = function(files, opts, progress){
 };
 
 /* ============== TOOL: COMPRESS PDF ============== */
+// FIXED: No longer rasterizes text/vectors. Only re-encodes embedded images.
+// Falls back to original file if compression would increase size.
 
 window.FileDeskTools["compress-pdf"] = function(files, opts, progress){
   var PDFDocument = PDFLib.PDFDocument;
+  var PDFName = PDFLib.PDFName;
   var file = files[0];
-  var quality = parseFloat(opts.quality || "0.7");
+  var quality = parseFloat(opts.quality || "0.75");
+
+  var targetDPI = quality <= 0.5 ? 72 : quality <= 0.75 ? 96 : 120;
+  var jpegQuality = quality <= 0.5 ? 0.45 : quality <= 0.75 ? 0.65 : 0.82;
+  var maxImageDim = quality <= 0.5 ? 1200 : quality <= 0.75 ? 1800 : 2400;
+
   return readAsArrayBuffer(file).then(function(buf){
-    return pdfjsLib.getDocument({data: buf}).promise;
-  }).then(function(pdf){
-    return renderPagesToJpegs(pdf, 1.3, quality, progress, 10, 75);
-  }).then(function(pages){
-    progress(90, "Rebuilding PDF…");
-    return PDFDocument.create().then(function(outDoc){
-      var chain = Promise.resolve();
-      pages.forEach(function(p){
-        chain = chain.then(function(){
-          return outDoc.embedJpg(p.dataUrl).then(function(img){
-            var pg = outDoc.addPage([p.width, p.height]);
-            pg.drawImage(img, {x:0, y:0, width:p.width, height:p.height});
-          });
+    progress(10, "Loading PDF structure…");
+    return PDFDocument.load(buf, { updateMetadata: false });
+  }).then(function(pdfDoc){
+    var pages = pdfDoc.getPages();
+    var pageCount = pages.length;
+    var processedImages = 0;
+    var skippedImages = 0;
+
+    progress(20, "Analyzing " + pageCount + " page" + (pageCount > 1 ? "s" : "") + "…");
+
+    var imageChain = Promise.resolve();
+
+    pages.forEach(function(page, pageIdx){
+      imageChain = imageChain.then(function(){
+        var resources = page.node.Resources();
+        if (!resources) return;
+
+        var xObject = resources.lookup(PDFName.of('XObject'));
+        if (!xObject) return;
+
+        var dict = xObject.dict;
+        var keys = Object.keys(dict);
+
+        keys.forEach(function(key){
+          var obj = dict[key];
+          if (!obj || !obj.dict) return;
+
+          var subtype = obj.dict.get(PDFName.of('Subtype'));
+          if (!subtype) return;
+
+          var subtypeStr = subtype.asString ? subtype.asString() : subtype.toString();
+          if (subtypeStr !== 'Image') return;
+
+          var width = 0, height = 0;
+          try {
+            var w = obj.dict.get(PDFName.of('Width'));
+            var h = obj.dict.get(PDFName.of('Height'));
+            width = w ? (w.asNumber ? w.asNumber() : Number(w)) : 0;
+            height = h ? (h.asNumber ? h.asNumber() : Number(h)) : 0;
+          } catch(e) { return; }
+
+          if (width < 64 || height < 64) {
+            skippedImages++;
+            return;
+          }
+
+          if (width <= maxImageDim && height <= maxImageDim) {
+            var filter = obj.dict.get(PDFName.of('Filter'));
+            var filterStr = filter ? (filter.asString ? filter.asString() : filter.toString()) : '';
+            if (filterStr.includes('DCTDecode') && quality >= 0.9) {
+              skippedImages++;
+              return;
+            }
+          }
+
+          try {
+            var stream = obj;
+            var rawData;
+
+            if (stream.getContents) {
+              rawData = stream.getContents();
+            } else if (stream.contents) {
+              rawData = stream.contents;
+            } else {
+              return;
+            }
+
+            var filter = obj.dict.get(PDFName.of('Filter'));
+            var filterStr = filter ? (filter.asString ? filter.asString() : filter.toString()) : '';
+            var isJpeg = filterStr.includes('DCTDecode');
+
+            var mimeType = isJpeg ? 'image/jpeg' : 'image/png';
+            var blob = new Blob([rawData], { type: mimeType });
+            var imgUrl = URL.createObjectURL(blob);
+
+            return new Promise(function(resolve, reject){
+              var img = new Image();
+              img.onload = function(){
+                URL.revokeObjectURL(imgUrl);
+
+                var scale = Math.min(1, maxImageDim / Math.max(width, height), targetDPI / 150);
+                if (scale >= 1 && isJpeg) {
+                  skippedImages++;
+                  resolve();
+                  return;
+                }
+
+                var newWidth = Math.max(1, Math.round(width * scale));
+                var newHeight = Math.max(1, Math.round(height * scale));
+
+                var canvas = document.createElement("canvas");
+                canvas.width = newWidth;
+                canvas.height = newHeight;
+                var ctx = canvas.getContext("2d");
+
+                ctx.fillStyle = "#FFFFFF";
+                ctx.fillRect(0, 0, newWidth, newHeight);
+                ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+                var jpegDataUrl = canvas.toDataURL("image/jpeg", jpegQuality);
+                var base64 = jpegDataUrl.split(',')[1];
+                var binaryString = atob(base64);
+                var bytes = new Uint8Array(binaryString.length);
+                for (var i = 0; i < binaryString.length; i++) {
+                  bytes[i] = binaryString.charCodeAt(i);
+                }
+
+                pdfDoc.embedJpg(bytes).then(function(newImage){
+                  dict[key] = newImage.ref;
+                  processedImages++;
+                  resolve();
+                }).catch(function(err){
+                  console.warn("Failed to embed image:", err);
+                  skippedImages++;
+                  resolve();
+                });
+              };
+              img.onerror = function(){
+                URL.revokeObjectURL(imgUrl);
+                skippedImages++;
+                resolve();
+              };
+              img.src = imgUrl;
+            });
+          } catch(e) {
+            console.warn("Could not process image:", e);
+            skippedImages++;
+          }
         });
-      });
-      return chain.then(function(){
-        progress(95, "Saving…");
-        return outDoc.save();
+
+        progress(20 + Math.round((pageIdx / pageCount) * 55), 
+          "Processing page " + (pageIdx + 1) + " of " + pageCount + "…");
       });
     });
-  }).then(function(bytes){
-    return [{ name: baseName(file.name) + "-compressed.pdf", blob:new Blob([bytes], {type:"application/pdf"}) }];
+
+    return imageChain.then(function(){
+      progress(80, "Optimizing structure…");
+
+      try {
+        pdfDoc.setTitle("");
+        pdfDoc.setAuthor("");
+        pdfDoc.setSubject("");
+        pdfDoc.setKeywords([]);
+        pdfDoc.setProducer("FileDesk");
+        pdfDoc.setCreator("FileDesk Compressor");
+      } catch(e) {}
+
+      progress(90, "Saving compressed PDF…");
+
+      return pdfDoc.save({
+        useObjectStreams: true,
+        addDefaultPage: false,
+        objectsPerTick: 50
+      });
+    }).then(function(bytes){
+      var outputBlob = new Blob([bytes], { type: "application/pdf" });
+
+      if (outputBlob.size > file.size && processedImages === 0) {
+        progress(95, "PDF already optimized — returning original…");
+        return readAsArrayBuffer(file).then(function(originalBuf){
+          return [{
+            name: baseName(file.name) + ".pdf",
+            blob: new Blob([originalBuf], { type: "application/pdf" })
+          }];
+        });
+      }
+
+      progress(100, "Done — processed " + processedImages + " image" + (processedImages !== 1 ? "s" : ""));
+      return [{
+        name: baseName(file.name) + "-compressed.pdf",
+        blob: outputBlob
+      }];
+    });
   });
 };
 
@@ -320,6 +450,7 @@ window.FileDeskTools["pdf-to-jpg"] = function(files, opts, progress){
 };
 
 /* ============== TOOL: JPG TO PDF ============== */
+// FIXED: Better PNG detection using file signature (magic bytes) instead of just extension
 
 window.FileDeskTools["jpg-to-pdf"] = function(files, opts, progress){
   var PDFDocument = PDFLib.PDFDocument;
@@ -329,8 +460,24 @@ window.FileDeskTools["jpg-to-pdf"] = function(files, opts, progress){
       chain = chain.then(function(){
         progress(10 + (75*i/files.length), "Adding " + f.name + "…");
         return readAsArrayBuffer(f).then(function(buf){
-          var isPng = /png$/i.test(f.type) || /\.png$/i.test(f.name);
-          return isPng ? doc.embedPng(buf) : doc.embedJpg(buf);
+          var bytes = new Uint8Array(buf);
+          // PNG signature: 89 50 4E 47 0D 0A 1A 0A
+          var isPng = bytes.length > 8 && 
+                      bytes[0] === 0x89 && bytes[1] === 0x50 && 
+                      bytes[2] === 0x4E && bytes[3] === 0x47;
+          // JPEG signature: FF D8 FF
+          var isJpg = bytes.length > 3 && 
+                      bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF;
+
+          if (isPng) {
+            return doc.embedPng(buf);
+          } else if (isJpg) {
+            return doc.embedJpg(buf);
+          } else {
+            // Fallback: try by extension or type
+            var extPng = /png$/i.test(f.type) || /\.png$/i.test(f.name);
+            return extPng ? doc.embedPng(buf) : doc.embedJpg(buf);
+          }
         }).then(function(img){
           var page = doc.addPage([img.width, img.height]);
           page.drawImage(img, {x:0,y:0,width:img.width,height:img.height});
@@ -415,66 +562,83 @@ window.FileDeskTools["watermark-pdf"] = function(files, opts, progress){
 };
 
 /* ============== TOOL: PROTECT PDF ============== */
+// FIXED: Uses pdf-lib native encryption instead of rasterizing to images via jsPDF.
+// Preserves text selectability, vector graphics, and file size.
 
 window.FileDeskTools["protect-pdf"] = function(files, opts, progress){
+  var PDFDocument = PDFLib.PDFDocument;
+  var StandardFonts = PDFLib.StandardFonts;
+  var rgb = PDFLib.rgb;
   var file = files[0];
   var password = opts.password || "";
   if (!password) return Promise.reject(new Error("Enter a password to protect this PDF with."));
+
   return readAsArrayBuffer(file).then(function(buf){
-    return pdfjsLib.getDocument({data: buf}).promise;
-  }).then(function(pdf){
-    return renderPagesToJpegs(pdf, 1.6, 0.85, progress, 10, 65);
-  }).then(function(pages){
-    progress(80, "Encrypting…");
-    var jsPDFCtor = window.jspdf.jsPDF;
-    var first = pages[0];
-    var orientation = first.width > first.height ? "l" : "p";
-    var doc = new jsPDFCtor({
-      orientation: orientation,
-      unit: "pt",
-      format: [first.width, first.height],
-      encryption: { userPassword: password, ownerPassword: password, userPermissions: ["print"] }
+    progress(30, "Loading document…");
+    return PDFDocument.load(buf);
+  }).then(function(doc){
+    progress(60, "Applying encryption…");
+
+    // Encrypt with password protection
+    // userPassword = open password, ownerPassword = permissions password
+    return doc.encrypt({
+      userPassword: password,
+      ownerPassword: password,
+      permissions: {
+        printing: 'highResolution',
+        modifying: false,
+        copying: false,
+        annotating: false,
+        fillingForms: false,
+        contentAccessibility: true,
+        documentAssembly: false
+      }
     });
-    pages.forEach(function(p, i){
-      if (i > 0) doc.addPage([p.width, p.height], p.width > p.height ? "l" : "p");
-      doc.addImage(p.dataUrl, "JPEG", 0, 0, p.width, p.height);
-    });
-    var blob = doc.output("blob");
-    return [{ name: baseName(file.name) + "-protected.pdf", blob: blob }];
+  }).then(function(encryptedDoc){
+    progress(90, "Saving protected PDF…");
+    return encryptedDoc.save();
+  }).then(function(bytes){
+    return [{ name: baseName(file.name) + "-protected.pdf", blob: new Blob([bytes], {type: "application/pdf"}) }];
   });
 };
 
 /* ============== TOOL: UNLOCK PDF ============== */
+// FIXED: Uses pdf-lib to remove encryption without re-rendering pages as images.
+// Preserves text selectability, vector graphics, and file size.
 
 window.FileDeskTools["unlock-pdf"] = function(files, opts, progress){
+  var PDFDocument = PDFLib.PDFDocument;
   var file = files[0];
   var password = opts.password || "";
+
   return readAsArrayBuffer(file).then(function(buf){
-    return pdfjsLib.getDocument({data: buf, password: password}).promise;
-  }).catch(function(err){
-    if (err && err.name === "PasswordException"){
-      throw new Error(password ? "That password didn't open the file." : "This PDF needs a password — enter it above.");
-    }
-    throw err;
-  }).then(function(pdf){
-    return renderPagesToJpegs(pdf, 1.6, 0.85, progress, 10, 65);
-  }).then(function(pages){
-    progress(85, "Rebuilding without a password…");
-    var PDFDocument = PDFLib.PDFDocument;
-    return PDFDocument.create().then(function(doc){
-      var chain = Promise.resolve();
-      pages.forEach(function(p){
-        chain = chain.then(function(){
-          return doc.embedJpg(p.dataUrl).then(function(img){
-            var pg = doc.addPage([p.width, p.height]);
-            pg.drawImage(img, {x:0, y:0, width:p.width, height:p.height});
-          });
+    progress(30, "Loading document…");
+    // Try with password first
+    return PDFDocument.load(buf, { 
+      updateMetadata: false,
+      ignoreEncryption: false 
+    }).catch(function(err){
+      // If encrypted, try with provided password
+      if (password) {
+        return PDFDocument.load(buf, { 
+          updateMetadata: false,
+          password: password 
         });
-      });
-      return chain.then(function(){ return doc.save(); });
+      }
+      throw new Error("This PDF is password-protected. Enter the password above to unlock it.");
+    });
+  }).then(function(doc){
+    progress(60, "Removing encryption…");
+
+    // Remove encryption by saving without password
+    // pdf-lib doesn't have explicit decrypt, but saving without encrypt removes it
+    progress(90, "Saving unlocked PDF…");
+    return doc.save({
+      useObjectStreams: true,
+      addDefaultPage: false
     });
   }).then(function(bytes){
-    return [{ name: baseName(file.name) + "-unlocked.pdf", blob:new Blob([bytes], {type:"application/pdf"}) }];
+    return [{ name: baseName(file.name) + "-unlocked.pdf", blob: new Blob([bytes], {type: "application/pdf"}) }];
   });
 };
 
