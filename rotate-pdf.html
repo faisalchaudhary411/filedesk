@@ -505,17 +505,24 @@ footer .bottom p{font-size:0.75rem; color:var(--ink-soft); margin:0;}
         </div>
         <script>
         (function(){
-          function checkInlineAd(){
+          function checkInlineAd(isFinal){
             var frame = document.getElementById('adInline');
             var fallback = document.getElementById('adInlineFallback');
             if(!frame || !fallback) return;
             var ins = frame.querySelector('ins.adsbygoogle');
-            var hasAd = ins && ins.getAttribute('data-ad-status') === 'filled';
-            if(hasAd){ fallback.style.display = 'none'; }
+            var status = ins && ins.getAttribute('data-ad-status');
+            var hasAd = status === 'filled';
+            var noFill = status === 'unfilled' || (isFinal && !hasAd);
+            if(hasAd){
+              fallback.style.display = 'none';
+            } else if(noFill){
+              frame.style.display = 'none';
+              fallback.style.display = 'block';
+            }
           }
-          setTimeout(checkInlineAd, 2000);
-          setTimeout(checkInlineAd, 5000);
-          setTimeout(checkInlineAd, 8000);
+          setTimeout(function(){ checkInlineAd(false); }, 1500);
+          setTimeout(function(){ checkInlineAd(false); }, 3000);
+          setTimeout(function(){ checkInlineAd(true); }, 4500);
         })();
         </script>
       </section>
@@ -540,17 +547,24 @@ footer .bottom p{font-size:0.75rem; color:var(--ink-soft); margin:0;}
       </div>
       <script>
       (function(){
-        function checkSidebarAd(){
+        function checkSidebarAd(isFinal){
           var frame = document.getElementById('adSidebar');
           var fallback = document.getElementById('adSidebarFallback');
           if(!frame || !fallback) return;
           var ins = frame.querySelector('ins.adsbygoogle');
-          var hasAd = ins && ins.getAttribute('data-ad-status') === 'filled';
-          if(hasAd){ fallback.style.display = 'none'; }
+          var status = ins && ins.getAttribute('data-ad-status');
+          var hasAd = status === 'filled';
+          var noFill = status === 'unfilled' || (isFinal && !hasAd);
+          if(hasAd){
+            fallback.style.display = 'none';
+          } else if(noFill){
+            frame.style.display = 'none';
+            fallback.style.display = 'block';
+          }
         }
-        setTimeout(checkSidebarAd, 2000);
-        setTimeout(checkSidebarAd, 5000);
-        setTimeout(checkSidebarAd, 8000);
+        setTimeout(function(){ checkSidebarAd(false); }, 1500);
+        setTimeout(function(){ checkSidebarAd(false); }, 3000);
+        setTimeout(function(){ checkSidebarAd(true); }, 4500);
       })();
       </script>
     </aside>
