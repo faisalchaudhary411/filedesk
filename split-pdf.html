@@ -510,7 +510,7 @@ footer .bottom p{font-size:0.75rem; color:var(--ink-soft); margin:0;}
             var fallback = document.getElementById('adInlineFallback');
             if(!frame || !fallback) return;
             var ins = frame.querySelector('ins.adsbygoogle');
-            var hasAd = ins && (ins.offsetHeight > 50 || ins.querySelector('iframe') || ins.innerHTML.trim().length > 0);
+            var hasAd = ins && ins.getAttribute('data-ad-status') === 'filled';
             if(hasAd){ fallback.style.display = 'none'; }
           }
           setTimeout(checkInlineAd, 2000);
@@ -545,7 +545,7 @@ footer .bottom p{font-size:0.75rem; color:var(--ink-soft); margin:0;}
           var fallback = document.getElementById('adSidebarFallback');
           if(!frame || !fallback) return;
           var ins = frame.querySelector('ins.adsbygoogle');
-          var hasAd = ins && (ins.offsetHeight > 50 || ins.querySelector('iframe') || ins.innerHTML.trim().length > 0);
+          var hasAd = ins && ins.getAttribute('data-ad-status') === 'filled';
           if(hasAd){ fallback.style.display = 'none'; }
         }
         setTimeout(checkSidebarAd, 2000);
