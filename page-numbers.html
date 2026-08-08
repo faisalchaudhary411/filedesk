@@ -606,7 +606,7 @@ window.FileDeskUtils = {
   },
   escapeHtml: function(s){
     return String(s).replace(/[&<>"']/g, function(c){
-      return ({"&":"&amp;","<":"&lt;",">":"&gt;",""":"&quot;","'":"&#39;"})[c];
+      return ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];
     });
   },
   readAsArrayBuffer: function(file){

@@ -359,23 +359,36 @@ footer .bottom p{font-size:0.75rem; color:var(--ink-soft); margin:0;}
   </section>
   <script>
   (function(){
-    // Hide fallback if AdSense actually renders an ad
-    function checkAdLoaded(){
+    // Hide fallback only if AdSense actually filled the slot with a real ad.
+    // NOTE: the <ins> tag has a fixed inline width/height (300x250), so
+    // ins.offsetHeight is ALWAYS > 50 even when no ad has loaded — that
+    // false signal was what hid the Pro fallback and left a blank box.
+    // Instead we check the iframe AdSense injects once a request resolves,
+    // and the official data-ad-status attribute it sets ("filled"/"unfilled").
+    function checkAdLoaded(isFinal){
       var frame = document.getElementById('adBanner300');
       var fallback = document.getElementById('adFallback');
       if(!frame || !fallback) return;
-      // Check if ins element has content or iframe loaded
       var ins = frame.querySelector('ins.adsbygoogle');
-      var hasAd = ins && (ins.offsetHeight > 50 || ins.querySelector('iframe') || ins.innerHTML.trim().length > 0);
+      if(!ins) return;
+      var status = ins.getAttribute('data-ad-status');
+      var hasAd = status === 'filled' || !!ins.querySelector('iframe');
+      // Treat explicit "unfilled", or (on the final check) still-no-status
+      // as no-fill — the latter covers an invalid/placeholder ad-slot ID,
+      // which never gets a status at all instead of an "unfilled" one.
+      var noFill = status === 'unfilled' || (isFinal && !status && !hasAd);
       if(hasAd){
         fallback.style.display = 'none';
         frame.style.borderStyle = 'solid';
+      } else if(noFill){
+        frame.style.display = 'none';
+        fallback.style.display = 'block';
       }
     }
-    // Check multiple times
-    setTimeout(checkAdLoaded, 2000);
-    setTimeout(checkAdLoaded, 5000);
-    setTimeout(checkAdLoaded, 8000);
+    // Check multiple times; the last check treats a still-blank slot as no-fill
+    setTimeout(function(){ checkAdLoaded(false); }, 2000);
+    setTimeout(function(){ checkAdLoaded(false); }, 5000);
+    setTimeout(function(){ checkAdLoaded(true); }, 8000);
   })();
   </script>
 
