@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><script src="https://quge5.com/88/tag.min.js" data-zone="268492" async data-cfasync="false"></script>
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FileDesk — Free PDF Tools | Merge, Split, Compress & Convert</title>
@@ -53,8 +53,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 
-<!-- AdSense -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3088581560119805" crossorigin="anonymous"></script>
+<!-- Monetag -->
+<script src="https://quge5.com/88/tag.min.js" data-zone="268492" async data-cfasync="false"></script>
 
 <style>
 :root{
@@ -348,17 +348,9 @@ footer .bottom p{font-size:0.75rem; color:var(--ink-soft); margin:0;}
     </div>
   </section>
 
-  <!-- AdSense Banner -->
+  <!-- Pro upsell (Monetag ads run separately, self-injected via the tag in <head>) -->
   <section class="ad-section" id="adSection">
     <div class="wrap">
-      <div class="ad-label">Advertisement</div>
-      <div class="ad-frame" id="adBanner300" style="min-height:250px;">
-        <ins class="adsbygoogle"
-             style="display:inline-block;width:300px;height:250px"
-             data-ad-client="ca-pub-3088581560119805"
-             data-ad-slot="YOUR_ADSENSE_SLOT_ID"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-      </div>
       <div class="ad-fallback" id="adFallback" style="display:block;">
         <div style="background:linear-gradient(135deg,#E7ECFF,#fff);border:1.5px solid #2453FF;border-radius:12px;padding:24px;text-align:center;max-width:300px;margin:0 auto;">
           <div style="font-size:1.6rem;margin-bottom:8px;">🚀</div>
@@ -369,39 +361,6 @@ footer .bottom p{font-size:0.75rem; color:var(--ink-soft); margin:0;}
       </div>
     </div>
   </section>
-  <script>
-  (function(){
-    // Hide fallback ONLY when AdSense's own data-ad-status attribute says
-    // "filled". Do NOT treat the presence of an iframe as proof of a loaded
-    // ad — Google inserts that iframe container as soon as it ATTEMPTS a
-    // request, filled or not, so checking for it just reproduces the same
-    // false-positive that caused the blank box in the first place.
-    function checkAdLoaded(isFinal){
-      var frame = document.getElementById('adBanner300');
-      var fallback = document.getElementById('adFallback');
-      if(!frame || !fallback) return;
-      var ins = frame.querySelector('ins.adsbygoogle');
-      if(!ins) return;
-      var status = ins.getAttribute('data-ad-status');
-      var hasAd = status === 'filled';
-      // Treat explicit "unfilled", or (on the final check) still-no-status
-      // at all, as no-fill — the latter covers an invalid/placeholder
-      // ad-slot ID, which never gets any status set on it.
-      var noFill = status === 'unfilled' || (isFinal && !hasAd);
-      if(hasAd){
-        fallback.style.display = 'none';
-        frame.style.borderStyle = 'solid';
-      } else if(noFill){
-        frame.style.display = 'none';
-        fallback.style.display = 'block';
-      }
-    }
-    // Check multiple times; the last check treats a still-blank slot as no-fill
-    setTimeout(function(){ checkAdLoaded(false); }, 1500);
-    setTimeout(function(){ checkAdLoaded(false); }, 3000);
-    setTimeout(function(){ checkAdLoaded(true); }, 4500);
-  })();
-  </script>
 
   <section class="tools-section">
     <div class="wrap">
@@ -521,16 +480,6 @@ footer .bottom p{font-size:0.75rem; color:var(--ink-soft); margin:0;}
     item.querySelector(".faq-q").addEventListener("click", function(){ item.classList.toggle("open"); });
     faqList.appendChild(item);
   });
-
-  // Ad fallback detection
-  setTimeout(function(){
-    var frame = document.getElementById("adBanner300");
-    var fallback = document.getElementById("adFallback");
-    if (frame && frame.offsetHeight < 50) {
-      frame.style.display = "none";
-      fallback.classList.add("visible");
-    }
-  }, 3500);
 
   // Sticky ad
   setTimeout(function(){

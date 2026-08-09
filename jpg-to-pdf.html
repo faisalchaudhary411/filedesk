@@ -49,7 +49,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 <script src="tools.js" defer></script>
 
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3088581560119805" crossorigin="anonymous"></script>
+<script src="https://quge5.com/88/tag.min.js" data-zone="268492" async data-cfasync="false"></script>
 
 <style>
 :root{
@@ -500,14 +500,6 @@ footer .bottom p{font-size:0.75rem; color:var(--ink-soft); margin:0;}
       </div>
 
       <section class="ad-section" style="margin-top:40px;" id="adSectionInline">
-        <div class="ad-label">Advertisement</div>
-        <div class="ad-frame-inline" id="adInline" style="min-height:250px;">
-          <ins class="adsbygoogle"
-               style="display:inline-block;width:300px;height:250px"
-               data-ad-client="ca-pub-3088581560119805"
-               data-ad-slot="YOUR_ADSENSE_SLOT_ID_2"></ins>
-          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        </div>
         <div class="ad-fallback" id="adInlineFallback" style="display:block;">
           <div style="background:linear-gradient(135deg,#E7ECFF,#fff);border:1.5px solid #2453FF;border-radius:12px;padding:24px;text-align:center;max-width:300px;margin:0 auto;">
             <div style="font-size:1.6rem;margin-bottom:8px;">🚀</div>
@@ -516,40 +508,10 @@ footer .bottom p{font-size:0.75rem; color:var(--ink-soft); margin:0;}
             <a href="#" onclick="alert('Coming soon!');return false;" style="display:inline-block;background:#2453FF;color:#fff;padding:8px 18px;border-radius:8px;text-decoration:none;font-size:0.8rem;font-weight:600;">Get early access →</a>
           </div>
         </div>
-        <script>
-        (function(){
-          function checkInlineAd(isFinal){
-            var frame = document.getElementById('adInline');
-            var fallback = document.getElementById('adInlineFallback');
-            if(!frame || !fallback) return;
-            var ins = frame.querySelector('ins.adsbygoogle');
-            var status = ins && ins.getAttribute('data-ad-status');
-            var hasAd = status === 'filled';
-            var noFill = status === 'unfilled' || (isFinal && !hasAd);
-            if(hasAd){
-              fallback.style.display = 'none';
-            } else if(noFill){
-              frame.style.display = 'none';
-              fallback.style.display = 'block';
-            }
-          }
-          setTimeout(function(){ checkInlineAd(false); }, 1500);
-          setTimeout(function(){ checkInlineAd(false); }, 3000);
-          setTimeout(function(){ checkInlineAd(true); }, 4500);
-        })();
-        </script>
       </section>
     </div>
 
     <aside class="sidebar-ad">
-      <div class="ad-label">Advertisement</div>
-      <div class="ad-frame" id="adSidebar" style="min-height:600px;">
-        <ins class="adsbygoogle"
-             style="display:inline-block;width:300px;height:600px"
-             data-ad-client="ca-pub-3088581560119805"
-             data-ad-slot="YOUR_ADSENSE_SLOT_ID_3"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-      </div>
       <div class="ad-fallback" id="adSidebarFallback" style="display:block;">
         <div style="background:linear-gradient(135deg,#E7ECFF,#fff);border:1.5px solid #2453FF;border-radius:12px;padding:20px;text-align:center;">
           <div style="font-size:1.4rem;margin-bottom:8px;">🚀</div>
@@ -558,28 +520,6 @@ footer .bottom p{font-size:0.75rem; color:var(--ink-soft); margin:0;}
           <a href="#" onclick="alert('Coming soon!');return false;" style="display:inline-block;background:#2453FF;color:#fff;padding:6px 14px;border-radius:8px;text-decoration:none;font-size:0.75rem;font-weight:600;">Learn more →</a>
         </div>
       </div>
-      <script>
-      (function(){
-        function checkSidebarAd(isFinal){
-          var frame = document.getElementById('adSidebar');
-          var fallback = document.getElementById('adSidebarFallback');
-          if(!frame || !fallback) return;
-          var ins = frame.querySelector('ins.adsbygoogle');
-          var status = ins && ins.getAttribute('data-ad-status');
-          var hasAd = status === 'filled';
-          var noFill = status === 'unfilled' || (isFinal && !hasAd);
-          if(hasAd){
-            fallback.style.display = 'none';
-          } else if(noFill){
-            frame.style.display = 'none';
-            fallback.style.display = 'block';
-          }
-        }
-        setTimeout(function(){ checkSidebarAd(false); }, 1500);
-        setTimeout(function(){ checkSidebarAd(false); }, 3000);
-        setTimeout(function(){ checkSidebarAd(true); }, 4500);
-      })();
-      </script>
     </aside>
   </div>
 
@@ -745,21 +685,6 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 });
 
-// Ad fallback detection
-document.addEventListener('DOMContentLoaded', function(){
-  setTimeout(function(){
-    var frames = document.querySelectorAll('.ad-frame, .ad-frame-inline');
-    frames.forEach(function(frame){
-      if (frame.offsetHeight < 50) {
-        frame.style.display = "none";
-        var fallback = frame.parentElement.querySelector('.ad-fallback');
-        if (fallback) fallback.classList.add("visible");
-      } else {
-        frame.classList.add("loaded");
-      }
-    });
-  }, 4000);
-});
 
 // PDF.js init
 if (window.pdfjsLib) {
