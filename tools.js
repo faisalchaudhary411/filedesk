@@ -66,6 +66,24 @@ function buildDocx(paragraphs){
 
 /* ============== BUILD PDF FROM TEXT ============== */
 
+/* Strip/replace characters the WinAnsi (StandardFonts.Helvetica) encoding
+   can't represent, so drawText() never throws on tabs, control chars, or
+   stray Unicode symbols pulled out of a Word doc. */
+function sanitizeForWinAnsi(str){
+  if (!str) return "";
+  return str
+    // tabs -> spaces (this is what was breaking word-to-pdf)
+    .replace(/\t/g, "    ")
+    // normalize newlines/carriage returns that might sneak into a "line"
+    .replace(/\r/g, "")
+    // other C0/C1 control characters WinAnsi has no glyph for
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, "")
+    // anything outside WinAnsi's printable + Latin-1 supplement range
+    // (smart quotes/em-dash etc. from Word are already fine here; this
+    // catches emoji, exotic symbols, other scripts, etc.)
+    .replace(/[^\x20-\x7E\xA0-\xFF]/g, "?");
+}
+
 function buildPdfFromText(paragraphs){
   var PDFDocument = PDFLib.PDFDocument;
   var StandardFonts = PDFLib.StandardFonts;
@@ -93,11 +111,17 @@ function buildPdfFromText(paragraphs){
         return lines.length ? lines : [""];
       }
 
-      paragraphs.forEach(function(para){
+      paragraphs.forEach(function(rawPara){
+        var para = sanitizeForWinAnsi(rawPara);
         var lines = para.trim() === "" ? [""] : wrapLine(para);
         lines.forEach(function(line){
           if (y < margin){ newPage(); }
-          page.drawText(line, {x: margin, y: y, size: fontSize, font: font});
+          try {
+            page.drawText(line, {x: margin, y: y, size: fontSize, font: font});
+          } catch (e) {
+            // last-resort fallback: force plain ASCII if something still slips through
+            page.drawText(line.replace(/[^\x20-\x7E]/g, "?"), {x: margin, y: y, size: fontSize, font: font});
+          }
           y -= lineHeight;
         });
         y -= lineHeight * 0.3;
